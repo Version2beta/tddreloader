@@ -1,0 +1,12 @@
+{application, tddreloader, [
+  {description, "automatically reload and test modules in erlang"},
+  {vsn, "0.0.1"},
+  {modules, []},
+  {registered, []},
+  {applications, [
+    kernel,
+    stdlib
+  ]},
+  {mod, {tddreloader, []}},
+  {env, []}
+]}.

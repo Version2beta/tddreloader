@@ -1,0 +1,9 @@
+.eunit
+ebin
+deps
+*.o
+*.beam
+*.plt
+*.swp
+*.dump
+.erlang.mk.*
