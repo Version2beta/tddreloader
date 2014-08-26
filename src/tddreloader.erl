@@ -2,6 +2,15 @@
 % copyright 2014 M Robert Martin <rob@version2beta.com>
 %
 % `erl -pa ebin deps/*/ebin -s tddreloader start`
+%
+% Or, in a project Makefile:
+%
+% ```
+% shell:
+% 	erl -pa ebin -s tddreloader start
+% ```
+%
+% and then run `make shell`
 
 -module(tddreloader).
 -author("M Robert Martin <rob@version2beta.com>").
@@ -125,7 +134,5 @@ reload(Module) ->
       error
   end.
 
-
 stamp() ->
   erlang:localtime().
-

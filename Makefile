@@ -1,8 +1,10 @@
 PROJECT = tddreloader
 
 # dependencies
-
+#
 DEPS = 
 
-include erlang.mk
+shell:
+	erl -pa ebin -s tddreloader start
 
+include erlang.mk
