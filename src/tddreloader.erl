@@ -1,5 +1,7 @@
-%% @copyright 2014 OC Tanner Company
-%% @author M Robert Martin <rob@version2beta.com>
+% tddreloader - reloads changed sources and runs tests
+% copyright 2014 M Robert Martin <rob@version2beta.com>
+%
+% `erl -pa ebin deps/*/ebin -s tddreloader start`
 
 -module(tddreloader).
 -author("M Robert Martin <rob@version2beta.com>").
@@ -11,10 +13,8 @@
 -export([start/0, start_link/0]).
 -export([stop/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
--export([all_changed/0]).
--export([is_changed/1]).
--export([reload_modules/0, reload_modules/1]).
 -export([tests/0]).
+
 -record(state, {last, tref}).
 
 %% External API
@@ -56,23 +56,8 @@ terminate(_Reason, State) ->
 code_change(_Vsn, State, _Extra) ->
   {ok, State}.
 
-all_changed() ->
-  [M || {M, Fn} <- code:all_loaded(), is_list(Fn), is_changed(M)].
-
-is_changed(M) ->
-  try
-    module_vsn(M:module_info()) =/= module_vsn(code:get_object_code(M))
-    catch _:_ ->
-      false
-  end.
-
-reload_modules() ->
-  reload_modules(all_changed()).
-reload_modules(Modules) ->
-  [begin code:purge(M), code:load_file(M) end || M <- Modules].
-
 tests() ->
-  eunit:test({dir, 'src'}).
+  eunit:test({dir, "ebin"}, [verbose]).
 
 %% Internal API
 
@@ -91,15 +76,24 @@ sources() ->
 sources(Path) ->
   filelib:wildcard(Path).
 
+is_changed(Source, From, To) ->
+  case file:read_file_info(Source) of
+    {ok, #file_info{mtime = Mtime}} when Mtime >= From, Mtime < To ->
+      true;
+    {ok, _} ->
+      false;
+    {error, Reason} ->
+      {error, Reason}
+  end.
+
 doit(From, To) ->
-  [case file:read_file_info(Filename) of
-      {ok, #file_info{mtime = Mtime}} when Mtime >= From, Mtime < To ->
+  [case is_changed(Filename, From, To) of
+      true ->
         compile(Filename);
-      {ok, _} ->
+      false ->
         unmodified;
       {error, Reason} ->
-        io:format("Error reading ~s's file info: ~p~n",
-          [Filename, Reason]),
+        io:format("Error reading ~s: ~p~n", [Filename, Reason]),
         error
     end || Filename <- sources()].
 
