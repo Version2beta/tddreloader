@@ -13,7 +13,8 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export([all_changed/0]).
 -export([is_changed/1]).
--export([reload_modules/1]).
+-export([reload_modules/0, reload_modules/1]).
+-export([tests/0]).
 -record(state, {last, tref}).
 
 %% External API
@@ -55,9 +56,6 @@ terminate(_Reason, State) ->
 code_change(_Vsn, State, _Extra) ->
   {ok, State}.
 
-reload_modules(Modules) ->
-  [begin code:purge(M), code:load_file(M) end || M <- Modules].
-
 all_changed() ->
   [M || {M, Fn} <- code:all_loaded(), is_list(Fn), is_changed(M)].
 
@@ -68,6 +66,14 @@ is_changed(M) ->
       false
   end.
 
+reload_modules() ->
+  reload_modules(all_changed()).
+reload_modules(Modules) ->
+  [begin code:purge(M), code:load_file(M) end || M <- Modules].
+
+tests() ->
+  eunit:test({dir, 'src'}).
+
 %% Internal API
 
 module_vsn({M, Beam, _Fn}) ->
@@ -76,7 +82,14 @@ module_vsn({M, Beam, _Fn}) ->
 module_vsn(L) when is_list(L) ->
   {_, Attrs} = lists:keyfind(attributes, 1, L),
   {_, Vsn} = lists:keyfind(vsn, 1, Attrs),
-  Vsn.
+  Vsn;
+module_vsn(M) when is_atom(M) ->
+  module_vsn(M:module_info()).
+
+sources() ->
+  sources("src/**/*.?rl").
+sources(Path) ->
+  filelib:wildcard(Path).
 
 doit(From, To) ->
   [case file:read_file_info(Filename) of
@@ -88,10 +101,10 @@ doit(From, To) ->
         io:format("Error reading ~s's file info: ~p~n",
           [Filename, Reason]),
         error
-    end || Filename <- filelib:wildcard("src/**/*.?rl")].
+    end || Filename <- sources()].
 
 compile(Filename) ->
-  io:format("Compiling ~p ... ", [Filename]),
+  io:format("~nCompiling ~p ... ", [Filename]),
   case compile:file(Filename, {outdir, "ebin"}) of
     {ok, Module} ->
       io:format("succeeded (~p)~n", [Module]),
@@ -105,7 +118,7 @@ reload(Module) ->
   code:purge(Module),
   case code:load_file(Module) of
     {module, Module} ->
-      io:format("Vsn ~w ok.~n", [ Vsn || {vsn, [Vsn]} <- Module:module_info(attributes)]),
+      io:format("version ~w ok.~n", module_vsn(Module)),
       eunit:test(Module, [verbose]);
     {error, Reason} ->
       io:format(" fail: ~p.~n", [Reason]),
@@ -121,4 +134,10 @@ stamp() ->
 %%
 
 dummy_test() ->
+  2 = 1 + 1.
+dummy2_test() ->
+  2 = 1 + 1.
+dummy3_test() ->
+  2 = 1 + 1.
+dummy4_test() ->
   2 = 1 + 1.
