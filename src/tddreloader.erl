@@ -129,15 +129,3 @@ reload(Module) ->
 stamp() ->
   erlang:localtime().
 
-%%
-%% Tests
-%%
-
-dummy_test() ->
-  2 = 1 + 1.
-dummy2_test() ->
-  2 = 1 + 1.
-dummy3_test() ->
-  2 = 1 + 1.
-dummy4_test() ->
-  2 = 1 + 1.
