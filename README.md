@@ -28,6 +28,10 @@ Once tddreloader is started, it'll watch for file changes and do its thing. But 
 
 `tddreloader:test_all()` - run all tests for beams in `ebin/`.
 
+### How I use it
+
+My actual workflow is to split my terminal (I use tmux for that) and run my editor (vim) over my Erlang shell. That way, every time I save a file, it triggers a compile, a reload, and running all the tests for that module.
+
 ## Installing
 
 Using erlang.mk:
