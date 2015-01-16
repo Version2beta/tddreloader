@@ -113,13 +113,13 @@ doit(From, To) ->
     end || Filename <- sources()].
 
 compile(Filename) ->
-  io:format("~nCompiling ~p ... ", [Filename]),
-  case compile:file(Filename, {outdir, "ebin"}) of
+  io:format("~nCompiling ~p ...~n", [Filename]),
+  case compile:file(Filename, [{outdir, "ebin"}, debug_info, report]) of
     {ok, Module} ->
       io:format("succeeded (~p)~n", [Module]),
       reload(Module);
     _ ->
-      io:format("failed~n")
+      io:format("failed (~p)~n",[Filename])
   end.
 
 reload(Module) ->
