@@ -114,7 +114,7 @@ doit(From, To) ->
 
 compile(Filename) ->
   io:format("~nCompiling ~p ...~n", [Filename]),
-  case compile:file(Filename, [{outdir, "ebin"}, debug_info, report]) of
+  case compile:file(Filename, [{outdir, "ebin"}, {i, "include"}, debug_info, report]) of
     {ok, Module} ->
       io:format("succeeded (~p)~n", [Module]),
       reload(Module);
